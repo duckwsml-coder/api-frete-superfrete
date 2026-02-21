@@ -34,10 +34,12 @@ app.get("/frete", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    const data = await response.json();
-    res.json(data);
+    const text = await response.text();
+
+    res.status(response.status).send(text);
+
   } catch (error) {
-    res.json({ erro: "Erro ao calcular frete" });
+    res.json({ erro: error.message });
   }
 });
 
