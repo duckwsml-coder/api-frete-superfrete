@@ -1,59 +1,57 @@
 const express = require("express");
 const axios = require("axios");
+const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+app.use(cors());
+app.use(express.json());
 
-/* Rota raiz para teste */
-app.get("/", (req, res) => {
-  res.send("API de frete rodando 🚚");
-});
+const TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiMWNhZmQ2OTMzY2I5Mjg1NzhmOTFiYzgyOGUxMzUzOGQxYjU1YzEwYjEyOWZlNjczNGM4NGZhNDdlMmRkOTMxYjA5ODExNjViNTVkYmJlYzMiLCJpYXQiOjE3NzE3Nzc3OTUuMzkzOTQ1LCJuYmYiOjE3NzE3Nzc3OTUuMzkzOTQ3LCJleHAiOjE4MDMzMTM3OTUuMzgzMDg3LCJzdWIiOiJhMTI0NjY2NS1hMTcyLTQ2YzQtOGY3NS01ZDBjYzllYzdhOGMiLCJzY29wZXMiOlsiY2FydC1yZWFkIiwiY2FydC13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiY29tcGFuaWVzLXdyaXRlIiwiY291cG9ucy1yZWFkIiwiY291cG9ucy13cml0ZSIsIm5vdGlmaWNhdGlvbnMtcmVhZCIsIm9yZGVycy1yZWFkIiwicHJvZHVjdHMtcmVhZCIsInByb2R1Y3RzLWRlc3Ryb3kiLCJwcm9kdWN0cy13cml0ZSIsInB1cmNoYXNlcy1yZWFkIiwic2hpcHBpbmctY2FsY3VsYXRlIiwic2hpcHBpbmctY2FuY2VsIiwic2hpcHBpbmctY2hlY2tvdXQiLCJzaGlwcGluZy1jb21wYW5pZXMiLCJzaGlwcGluZy1nZW5lcmF0ZSIsInNoaXBwaW5nLXByZXZpZXciLCJzaGlwcGluZy1wcmludCIsInNoaXBwaW5nLXNoYXJlIiwic2hpcHBpbmctdHJhY2tpbmciLCJlY29tbWVyY2Utc2hpcHBpbmciLCJ0cmFuc2FjdGlvbnMtcmVhZCIsInVzZXJzLXJlYWQiLCJ1c2Vycy13cml0ZSIsIndlYmhvb2tzLXJlYWQiLCJ3ZWJob29rcy13cml0ZSIsIndlYmhvb2tzLWRlbGV0ZSIsInRkZWFsZXItd2ViaG9vayJdfQ.tmJ6Bb9w_ciYGiaTRAVILPYKr4vyESU59dh17GgXFbW43t4JaF7U3_uIN5l2rjjM7C8AevYgeatHY9JIYamBOI2wo_w2kMAON1K0AYU7aANOx8aByZ25hvEjXJAUmcakzb-8LqoO-Qp547OU_JZ46glMBZ5ccl_c5fRp8Oq3Ns0_eexq5bFVjy67YXRod2A0d3vdL9r13gUxDV-0dobsayILQkePi9KWjAvsJTVqR7jeJMRRKEJit_HXYPUw_uvuqSBcOEg3c0xt8vN_n6_5RShdwjwwGbWc2MZGjcoKIvCexeiN79lcnvI1JM-0sqep-HdmyniVhPofawhDcVpa7sd3cCvBxUo0Pl4a6us4gG1F-LgmI5hA1708FLqEQXzylSgit_h2HO-cG46CbwBsoruBoXeBjeaiJcPKyNNXmOA1Oq9487raIk_rWp7uGSuvkSXlCJTMqtxnV3HrPJdhj90KGvxzjImX-UpXRM4lL1-NOnILhzlFr-OiPEen6Q52MjCZGqqLXrttKUt4JfL1nX-eL9LRyYBcDGoD_YDeWffDi0lweKKRU7XC5_5gwB0PBMoSn11T3BulvyTuT3v0q8jyL0RzL21b5zzDSFOrxd_9PTsRBLs5VtCUGLFGJhaMUYhAhSkHzZh2LcK5gjyqWMNek9-dYSli0P792YuDTlk";
+const CEP_ORIGEM = "62860000";
 
-/* Rota de cálculo de frete */
-app.get("/frete", async (req, res) => {
-  try {
-    const cep = (req.query.cep || "").replace(/\D/g, "");
+app.post("/calcular-frete", async (req, res) => {
 
-    if (cep.length !== 8) {
-      return res.status(400).json({ erro: "CEP inválido" });
+    const { cep } = req.body;
+
+    if (!cep) {
+        return res.status(400).json({ erro: "CEP obrigatório" });
     }
 
-    const response = await axios.post(
-      "https://api.superfrete.com/v1/quote",
-      {
-        from: { postal_code: "62860000" },
-        to: { postal_code: cep },
-        products: [
-          {
-            weight: 0.3,
-            width: 10,
-            height: 5,
-            length: 15
-          }
-        ]
-      },
-      {
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NzE2MzI4MTksInN1YiI6InVvSk54cERXS21aZzNMRWhtQnhSNVNaNEVXVzIifQ.0F8OY7G0mo3ZzBaJD5OqyscELsChWFWaVWks3LCHfPc"
-        },
-        timeout: 10000
-      }
-    );
+    try {
 
-    return res.json(response.data);
+        const response = await axios.post(
+            "https://api.melhorenvio.com.br/api/v2/me/shipment/calculate",
+            {
+                from: { postal_code: CEP_ORIGEM },
+                to: { postal_code: cep },
+                products: [
+                    {
+                        id: "1",
+                        width: 11,
+                        height: 16,
+                        length: 11,
+                        weight: 0.3,
+                        insurance_value: 120,
+                        quantity: 1
+                    }
+                ]
+            },
+            {
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${TOKEN}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
 
-  } catch (error) {
-    console.error("Erro SuperFrete:", error.response?.data || error.message);
+        res.json(response.data);
 
-    return res.status(500).json({
-      erro: "Erro ao calcular frete",
-      detalhe: error.response?.data || error.message
-    });
-  }
+    } catch (error) {
+        res.status(500).json({ erro: "Erro ao calcular frete" });
+    }
+
 });
 
-app.listen(PORT, () => {
-  console.log("Servidor rodando na porta", PORT);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("API rodando na porta " + PORT));
