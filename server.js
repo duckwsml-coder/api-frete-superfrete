@@ -4,6 +4,12 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+/* Rota raiz para teste */
+app.get("/", (req, res) => {
+  res.send("API de frete rodando 🚚");
+});
+
+/* Rota de cálculo de frete */
 app.get("/frete", async (req, res) => {
   try {
     const cep = (req.query.cep || "").replace(/\D/g, "");
@@ -13,7 +19,7 @@ app.get("/frete", async (req, res) => {
     }
 
     const response = await axios.post(
-      "https://api.superfrete.com.br/v1/quote",
+      "https://api.superfrete.com/v1/quote",
       {
         from: { postal_code: "62860000" },
         to: { postal_code: cep },
@@ -28,17 +34,20 @@ app.get("/frete", async (req, res) => {
       },
       {
         headers: {
+          "Accept": "application/json",
           "Content-Type": "application/json",
           "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NzE2MzI4MTksInN1YiI6InVvSk54cERXS21aZzNMRWhtQnhSNVNaNEVXVzIifQ.0F8OY7G0mo3ZzBaJD5OqyscELsChWFWaVWks3LCHfPc"
-        }
+        },
+        timeout: 10000
       }
     );
 
-    res.json(response.data);
+    return res.json(response.data);
 
   } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.status(500).json({
+    console.error("Erro SuperFrete:", error.response?.data || error.message);
+
+    return res.status(500).json({
       erro: "Erro ao calcular frete",
       detalhe: error.response?.data || error.message
     });
@@ -48,4 +57,3 @@ app.get("/frete", async (req, res) => {
 app.listen(PORT, () => {
   console.log("Servidor rodando na porta", PORT);
 });
-
