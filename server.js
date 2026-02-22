@@ -13,7 +13,7 @@ app.get("/frete", async (req, res) => {
     }
 
     const response = await axios.post(
-      "https://api.superfrete.com/v1/quote",
+      "https://api.superfrete.com.br/v1/quote",
       {
         from: { postal_code: "62860000" },
         to: { postal_code: cep },
@@ -48,3 +48,4 @@ app.get("/frete", async (req, res) => {
 app.listen(PORT, () => {
   console.log("Servidor rodando na porta", PORT);
 });
+
